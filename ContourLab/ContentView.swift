@@ -11,13 +11,39 @@ struct ContentView: View {
     @State private var modelNote: String?
     @State private var showsTable = false
     @State private var table: TableScene?
+    @State private var mode: CountMode = .round
+    @State private var busyBackground = false
+    @State private var shapes: ShapeResult?
+    @State private var shapesFailed = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     sourcePicker
-                    if let image, let result, !result.objects.isEmpty {
+                    Picker("Count", selection: $mode) {
+                        ForEach(CountMode.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    if mode == .shapes {
+                        Toggle("Busy background", isOn: $busyBackground)
+                    }
+                    if mode == .shapes, let image {
+                        ShapeImage(image: image, result: shapes)
+                        if isCounting {
+                            ProgressView("Measuring…")
+                        } else if let shapes {
+                            ShapeReport(result: shapes)
+                        } else if shapesFailed {
+                            ContentUnavailableView(
+                                "Couldn't measure this photo",
+                                systemImage: "exclamationmark.triangle",
+                                description: Text(busyBackground
+                                    ? "Vision's subject model isn't available here. It doesn't run in the Simulator; try a device, or turn off Busy background."
+                                    : "Try a photo with a plain background.")
+                            )
+                        }
+                    } else if let image, let result, !result.objects.isEmpty {
                         Picker("View", selection: $showsTable) {
                             Text("Photo").tag(false)
                             Text("3D").tag(true)
@@ -33,10 +59,12 @@ struct ContentView: View {
                     } else if let image {
                         CountedImage(image: image, result: result)
                     }
-                    if isCounting {
-                        ProgressView("Counting…")
-                    } else if let result {
-                        CountReport(result: result, modelNote: modelNote)
+                    if mode == .round {
+                        if isCounting {
+                            ProgressView("Counting…")
+                        } else if let result {
+                            CountReport(result: result, modelNote: modelNote)
+                        }
                     }
                 }
                 .padding()
@@ -45,8 +73,12 @@ struct ContentView: View {
         }
         .task(id: sample) {
             guard let sample else { return }
+            mode = sample.mode
+            busyBackground = sample == .busy
             await load(sample.image)
         }
+        .onChange(of: mode) { Task { await count() } }
+        .onChange(of: busyBackground) { Task { await count() } }
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }
             sample = nil
@@ -74,11 +106,26 @@ struct ContentView: View {
 
     private func load(_ newImage: CGImage?) async {
         image = newImage
+        await count()
+    }
+
+    private func count() async {
         result = nil
         table = nil
+        shapes = nil
+        shapesFailed = false
         modelNote = nil
-        guard let newImage else { return }
+        guard let newImage = image else { return }
         isCounting = true
+        if mode == .shapes {
+            let busy = busyBackground
+            shapes = try? await Task.detached {
+                try ShapeCounter(mask: busy ? ForegroundMask() as any ObjectMasking : BackgroundMask()).count(in: newImage)
+            }.value
+            shapesFailed = shapes == nil
+            isCounting = false
+            return
+        }
         result = try? await Task.detached { try ContourCounter().count(in: newImage) }.value
         if let result {
             table = await Task.detached {

@@ -19,6 +19,22 @@ This repo started in 2020 as a sample for [VNDetectContoursRequest](https://deve
 
 Works best with a plain background that differs in colour from the objects, and with objects that are roughly round.
 
+## Any shape
+
+Switch to **Any shape** to count things that aren't round, such as screws, keys or leaves. Each separate area is one object. For each object the app reports:
+
+- **Length:** its greatest extent, drawn as a dashed line.
+- **Width:** its narrowest extent.
+- **Roundness:** 4·area ÷ (π·length²). That is 1 for a disc, about 0.64 for a square and near 0 for a rod.
+
+From those numbers each object is called long, round or compact. Length and width come from the object's convex hull, so they don't change when the object is turned. Objects that touch count as one.
+
+| Round things: 37 circles, wrong | Any shape: 7 objects, right |
+|---|---|
+| <img src="docs/shapes-as-round.png" width="300" alt="Screws, a key, leaves and a washer misread as 37 circles"> | <img src="docs/shapes-any-shape.png" width="300" alt="The same picture read as 7 objects: 4 long, 1 round, 2 compact, each with its length drawn"> |
+
+On a **busy background**, turn on *Busy background*. The colour mask is then replaced with Vision's `VNGenerateForegroundInstanceMaskRequest`, the model that lifts a subject out of a photo. It finds a photo's main subjects, so it suits a few objects better than a heap of coins. The model runs on devices and on the Mac (it passes the tests there), but not in the iOS Simulator, where the app says so.
+
 ## 3D table
 
 Switch to **3D** and each counted object becomes a token on a table you can drag to turn. Each token keeps its place and relative size from the photo and is tinted with its average colour. It's built with RealityKit's `RealityView` and works in the simulator. The scale is relative: without a reference object it isn't real-world size.
@@ -54,7 +70,7 @@ cd ContourLabKit && swift test
 
 | Path | What |
 |---|---|
-| `ContourLabKit/` | The counter as a Swift package: `BackgroundMask`, `CircleFinder`, `ContourCounter`, `ShapeMetrics`, `CountSummary`, and `ColorSampler` plus `TableScene` for 3D, with tests |
+| `ContourLabKit/` | The counter as a Swift package: `BackgroundMask`, `ForegroundMask`, `CircleFinder`, `ContourCounter`, `ShapeCounter`, `ShapeMetrics`, `CountSummary`, and `ColorSampler` plus `TableScene` for 3D, with tests |
 | `ContourLab/` | The SwiftUI app, the RealityKit table, the on-device model note and the App Intent |
 | `project.yml` | XcodeGen project for iPhone and iPad |
 
