@@ -19,6 +19,16 @@ This repo started in 2020 as a sample for [VNDetectContoursRequest](https://deve
 
 Works best with a plain background that differs in colour from the objects, and with objects that are roughly round.
 
+## 3D table
+
+Switch to **3D** and each counted object becomes a token on a table you can drag to turn. Each token keeps its place and relative size from the photo and is tinted with its average colour. It's built with RealityKit's `RealityView` and works in the simulator. The scale is relative: without a reference object it isn't real-world size.
+
+| Photo | 3D |
+|---|---|
+| <img src="docs/view-photo.png" width="300" alt="The photo view with 51 coins circled"> | <img src="docs/view-3d.png" width="300" alt="The 3D view with 51 coin-coloured tokens on a table"> |
+
+What else Vision, ARKit and RealityKit could add, and what comes next, is in [docs/beyond-coins.md](docs/beyond-coins.md).
+
 ## Apple Intelligence and Siri
 
 - **On-device model (iOS 27).** When Apple Intelligence is available, the app shows the photo to the on-device model with Foundation Models' `Attachment` and asks what the objects are. The model never counts: it's told not to, any reply containing a digit is dropped, and the number on screen always comes from Vision.
@@ -44,8 +54,8 @@ cd ContourLabKit && swift test
 
 | Path | What |
 |---|---|
-| `ContourLabKit/` | The counter as a Swift package: `BackgroundMask`, `CircleFinder`, `ContourCounter`, `ShapeMetrics`, `CountSummary`, with tests |
-| `ContourLab/` | The SwiftUI app, the on-device model note and the App Intent |
+| `ContourLabKit/` | The counter as a Swift package: `BackgroundMask`, `CircleFinder`, `ContourCounter`, `ShapeMetrics`, `CountSummary`, and `ColorSampler` plus `TableScene` for 3D, with tests |
+| `ContourLab/` | The SwiftUI app, the RealityKit table, the on-device model note and the App Intent |
 | `project.yml` | XcodeGen project for iPhone and iPad |
 
 ## Licence
