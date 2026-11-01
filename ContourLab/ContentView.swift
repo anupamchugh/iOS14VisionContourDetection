@@ -9,13 +9,28 @@ struct ContentView: View {
     @State private var result: CountResult?
     @State private var isCounting = false
     @State private var modelNote: String?
+    @State private var showsTable = false
+    @State private var table: TableScene?
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     sourcePicker
-                    if let image {
+                    if let image, let result, !result.objects.isEmpty {
+                        Picker("View", selection: $showsTable) {
+                            Text("Photo").tag(false)
+                            Text("3D").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        if showsTable, let table {
+                            TableView3D(scene: table)
+                            .aspectRatio(Double(image.width) / Double(image.height), contentMode: .fit)
+                            .clipShape(.rect(cornerRadius: 12))
+                        } else {
+                            CountedImage(image: image, result: result)
+                        }
+                    } else if let image {
                         CountedImage(image: image, result: result)
                     }
                     if isCounting {
@@ -60,10 +75,20 @@ struct ContentView: View {
     private func load(_ newImage: CGImage?) async {
         image = newImage
         result = nil
+        table = nil
         modelNote = nil
         guard let newImage else { return }
         isCounting = true
         result = try? await Task.detached { try ContourCounter().count(in: newImage) }.value
+        if let result {
+            table = await Task.detached {
+                TableScene(
+                    result: result,
+                    imageAspect: Double(newImage.width) / Double(newImage.height),
+                    colours: ColorSampler.averageColors(in: newImage, for: result.objects)
+                )
+            }.value
+        }
         isCounting = false
         if let result, result.summary.count > 0, #available(iOS 27, *) {
             modelNote = await ModelNote.describe(image: newImage, summary: result.summary)

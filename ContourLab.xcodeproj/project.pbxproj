@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1FD244ACA7A96F45B4ACE1E0 /* TableView3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EE4A5A9F1A67115E809C78 /* TableView3D.swift */; };
 		508319D2C5B1A8FE4CA53120 /* Samples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16276AB844A39EEDFF216892 /* Samples.swift */; };
 		57796B4E52FB1FBD5C67A610 /* ContourLabKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3B733E547163D41CE5134694 /* ContourLabKit */; };
 		5CFBC530B137592DB015920A /* CountObjectsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */; };
@@ -19,6 +20,7 @@
 /* Begin PBXFileReference section */
 		16276AB844A39EEDFF216892 /* Samples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Samples.swift; sourceTree = "<group>"; };
 		53C0A960F20FBBC9258526AC /* ContourLabKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ContourLabKit; path = ContourLabKit; sourceTree = SOURCE_ROOT; };
+		72EE4A5A9F1A67115E809C78 /* TableView3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView3D.swift; sourceTree = "<group>"; };
 		80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContourLabApp.swift; sourceTree = "<group>"; };
 		9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountObjectsIntent.swift; sourceTree = "<group>"; };
 		C47BB0B40B0650047464EA17 /* ContourLab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ContourLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -73,6 +75,7 @@
 				9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */,
 				EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */,
 				16276AB844A39EEDFF216892 /* Samples.swift */,
+				72EE4A5A9F1A67115E809C78 /* TableView3D.swift */,
 			);
 			path = ContourLab;
 			sourceTree = "<group>";
@@ -157,6 +160,7 @@
 				5CFBC530B137592DB015920A /* CountObjectsIntent.swift in Sources */,
 				D2FE33C4E92F8B609904D354 /* ModelNote.swift in Sources */,
 				508319D2C5B1A8FE4CA53120 /* Samples.swift in Sources */,
+				1FD244ACA7A96F45B4ACE1E0 /* TableView3D.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
