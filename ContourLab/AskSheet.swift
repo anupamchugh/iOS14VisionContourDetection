@@ -1,5 +1,4 @@
 import ContourLabKit
-import FoundationModels
 import SwiftUI
 
 /// What one result screen hands the Ask sheet: the photo and the read-only facts the chat's tools return.
@@ -58,20 +57,6 @@ struct AskContext {
             ]
         )
     }
-}
-
-/// A read-only tool: hands the model facts Vision already measured. Nothing it returns is new.
-struct FactTool: Tool {
-    let name: String
-    /// What the receipt under a reply says: "Read size groups".
-    let label: String
-    let description: String
-    let facts: String
-
-    @Generable
-    struct Arguments {}
-
-    func call(arguments: Arguments) async throws -> String { facts }
 }
 
 struct AskSheet: View {
@@ -192,52 +177,23 @@ final class Chat {
 
     private(set) var lines: [Line] = []
     private(set) var isThinking = false
-    private let session: LanguageModelSession
-    private let image: CGImage
-    private let labels: [String: String]
-    private var hasSentPhoto = false
+    private let session: AskSession
 
     /// Nil when Apple Intelligence isn't available.
     init?(context: AskContext) {
-        guard case .available = SystemLanguageModel.default.availability else { return nil }
-        image = context.image
-        labels = Dictionary(uniqueKeysWithValues: context.tools.map { ($0.name, $0.label) })
-        session = LanguageModelSession(tools: context.tools, instructions: """
-            You answer questions about a photo of objects that Apple's Vision framework counted and measured.
-            Describe what the objects look like: what they might be, their colour, material and what they lie on.
-            Never write a number, a count, a size or a measurement, in digits or in words. When a question needs one,
-            say that Vision's figures are shown on the screen. Use the tools to read what Vision found. Keep answers to two sentences.
-            """)
+        guard let session = AskSession(image: context.image, tools: context.tools) else { return nil }
+        self.session = session
     }
 
     func ask(_ question: String) async {
         lines.append(Line(kind: .question, text: question))
         isThinking = true
         defer { isThinking = false }
-        let before = session.transcript.count
         do {
-            let response: LanguageModelSession.Response<String>
-            if hasSentPhoto {
-                response = try await session.respond(to: question)
-            } else {
-                let image = image
-                response = try await session.respond {
-                    question
-                    Attachment(image)
-                }
-                hasSentPhoto = true
-            }
-            for entry in session.transcript.dropFirst(before) {
-                guard case .toolCalls(let calls) = entry else { continue }
-                for call in calls {
-                    lines.append(Line(kind: .receipt, text: "Read \(labels[call.toolName] ?? call.toolName)"))
-                }
-            }
-            if let answer = ModelText.withoutNumbers(response.content) {
-                lines.append(Line(kind: .answer, text: answer))
-            } else {
-                lines.append(Line(kind: .dropped, text: "The reply had a number in it, so the app hid it. Every number on this screen comes from Vision."))
-            }
+            let reply = try await session.ask(question)
+            lines += reply.toolsRead.map { Line(kind: .receipt, text: "Read \($0)") }
+            lines.append(reply.answer.map { Line(kind: .answer, text: $0) }
+                ?? Line(kind: .dropped, text: "The reply had a number in it, so the app hid it. Every number on this screen comes from Vision."))
         } catch {
             lines.append(Line(kind: .dropped, text: "The on-device model couldn't answer that. Try asking another way."))
         }

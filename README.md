@@ -55,7 +55,7 @@ What else Vision, ARKit and RealityKit could add, and what comes next, is in [do
 
 ## Apple Intelligence and Siri
 
-- **Guess first, then ask.** Coins, Leaves and Anything open with the count hidden: guess how many, or skip, and Vision reveals the count and the circles. The best miss for each kind is kept on the device. Each result then has an *Ask* button: a chat with the on-device model, which sees the photo and can read Vision's results through two read-only Foundation Models tools (the count summary plus the size groups, the object table, or the board widths). A reply containing a digit is dropped, so every number on screen still comes from Vision.
+- **Guess first, then ask.** Coins, Leaves and Anything open with the count hidden: guess how many, or skip, and Vision reveals the count and the circles. The best miss for each kind is kept on the device. Each result then has an *Ask* button: a chat with the on-device model, which sees the photo and can read Vision's results through two read-only Foundation Models tools (the count summary plus the size groups, the object table, or the board widths). A reply containing a digit is dropped, so every number on screen still comes from Vision. `swift test` runs the chat against the real on-device model on a Mac with Apple Intelligence on (the iOS Simulator doesn't have it) and checks that a reply coaxed into giving a count is dropped.
 
 - **On-device model (iOS 27).** When Apple Intelligence is available, the app shows the photo to the on-device model with Foundation Models' `Attachment` and asks what the objects are. The model never counts: it's told not to, any reply containing a digit is dropped, and the number on screen always comes from Vision.
 - **Siri and Shortcuts.** `CountObjectsIntent` counts the objects in a photo without opening the app. Say *"Count objects with Contour Lab"*, or use it in a shortcut or on the Action button.
@@ -80,7 +80,7 @@ cd ContourLabKit && swift test
 
 | Path | What |
 |---|---|
-| `ContourLabKit/` | The counter as a Swift package: `BackgroundMask`, `ForegroundMask`, `CircleFinder`, `ContourCounter`, `ShapeCounter`, `ShapeMetrics`, `CountSummary`, and `ColorSampler` plus `TableScene` for 3D, with tests |
+| `ContourLabKit/` | The counter as a Swift package: `BackgroundMask`, `ForegroundMask`, `CircleFinder`, `ContourCounter`, `ShapeCounter`, `ShapeMetrics`, `CountSummary`, `ColorSampler` plus `TableScene` for 3D, `BoardOutline`, and `AskSession` with its read-only `FactTool`s, with tests |
 | `ContourLab/` | The SwiftUI app, the RealityKit table, the on-device model note and the App Intent |
 | `project.yml` | XcodeGen project for iPhone and iPad |
 
