@@ -11,6 +11,8 @@ struct CoinsScreen: View {
     @State private var isCounting = true
     @State private var showsTable = false
     @State private var asks = false
+    /// False until the person guesses or skips: the count and circles stay hidden.
+    @State private var revealed = false
 
     var body: some View {
         ScrollView {
@@ -20,11 +22,14 @@ struct CoinsScreen: View {
                         TableView3D(scene: table)
                             .aspectRatio(Double(image.width) / Double(image.height), contentMode: .fit)
                     } else {
-                        CountedImage(image: image, result: result)
+                        CountedImage(image: image, result: revealed ? result : nil)
                     }
                 }
                 .clipShape(.rect(cornerRadius: 20))
-                if isCounting {
+                GuessCard(question: "How many round things are in the photo?", actual: result?.summary.count, key: "coins", revealed: $revealed)
+                if !revealed {
+                    EmptyView()
+                } else if isCounting {
                     ProgressView("Counting…").padding()
                 } else if let result {
                     Headline(count: result.summary.count.formatted(), caption: result.summary.count == 1 ? "round object" : "round objects")
@@ -36,7 +41,7 @@ struct CoinsScreen: View {
         }
         .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
-            if result != nil { AskButton(title: "Ask about this photo") { asks = true } }
+            if revealed, result != nil { AskButton(title: "Ask about this photo") { asks = true } }
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -45,9 +50,9 @@ struct CoinsScreen: View {
                     Text("3D").tag(true)
                 }
                 .pickerStyle(.segmented)
-                .disabled(table == nil)
+                .disabled(table == nil || !revealed)
             }
-            if let result {
+            if revealed, let result {
                 ToolbarItem(placement: .topBarTrailing) {
                     ShareLink(item: result.summary.sentence)
                 }

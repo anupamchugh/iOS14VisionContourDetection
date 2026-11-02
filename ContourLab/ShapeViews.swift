@@ -11,6 +11,8 @@ struct ShapesScreen: View {
     /// The object the person says is a coin, and which coin, so lengths can be given in centimetres.
     @State private var reference: (shape: Int, coin: ReferenceCoin)?
     @State private var asks = false
+    /// False until the person guesses or skips: the count, numbers and table stay hidden.
+    @State private var revealed = false
 
     private var scale: ReferenceScale? {
         guard let reference, let shape = result?.shapes.first(where: { $0.id == reference.shape }) else { return nil }
@@ -20,9 +22,12 @@ struct ShapesScreen: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {
-                ShapeImage(image: image, result: result)
+                ShapeImage(image: image, result: revealed ? result : nil)
                     .clipShape(.rect(cornerRadius: 20))
-                if let result {
+                GuessCard(question: "How many separate \(kind == .leaves ? "leaves and other objects" : "objects") are in the photo?", actual: result?.summary.count, key: kind.rawValue.lowercased(), revealed: $revealed)
+                if !revealed {
+                    EmptyView()
+                } else if let result {
                     Headline(count: result.summary.count.formatted(), caption: Self.caption(result.summary))
                     ShapeTable(result: result, scale: scale)
                     referenceNote(result)
@@ -42,7 +47,7 @@ struct ShapesScreen: View {
         }
         .background(Theme.background)
         .safeAreaInset(edge: .bottom) {
-            if let result {
+            if revealed, let result {
                 AskButton(title: kind == .leaves ? "Ask about these leaves" : "Ask about these objects") { asks = true }
                     .sheet(isPresented: $asks) { AskSheet(context: .shapes(image: image, result: result, kind: kind, scale: scale)) }
             }

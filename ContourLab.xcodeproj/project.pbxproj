@@ -20,6 +20,7 @@
 		E403B5B01448B86AF68B9E0F /* AskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BE68FA353AE6F98579CBB9 /* AskSheet.swift */; };
 		EC99E232FD4AC6A9CA32E04C /* CoinsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86BAC0A91C8D28BD2602E8C5 /* CoinsScreen.swift */; };
 		EE0053D0ADE406EDAE2F9811 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D22F8F8A2325B32C8BB81951 /* Assets.xcassets */; };
+		FFA271031E68B984B811EC48 /* GuessCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D529092655469ADE740E2C /* GuessCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		72EE4A5A9F1A67115E809C78 /* TableView3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView3D.swift; sourceTree = "<group>"; };
 		80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContourLabApp.swift; sourceTree = "<group>"; };
 		86BAC0A91C8D28BD2602E8C5 /* CoinsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsScreen.swift; sourceTree = "<group>"; };
+		92D529092655469ADE740E2C /* GuessCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuessCard.swift; sourceTree = "<group>"; };
 		9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountObjectsIntent.swift; sourceTree = "<group>"; };
 		A4123E18100EC6857C99B9FC /* ShapeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeViews.swift; sourceTree = "<group>"; };
 		C47BB0B40B0650047464EA17 /* ContourLab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ContourLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +88,7 @@
 				F426D914177F22495F9946E5 /* ContentView.swift */,
 				80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */,
 				9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */,
+				92D529092655469ADE740E2C /* GuessCard.swift */,
 				EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */,
 				16276AB844A39EEDFF216892 /* Samples.swift */,
 				A4123E18100EC6857C99B9FC /* ShapeViews.swift */,
@@ -176,6 +179,7 @@
 				9E45ACA970542D79F1A1D082 /* ContentView.swift in Sources */,
 				DAB1DB06B11C1010752BBF30 /* ContourLabApp.swift in Sources */,
 				5CFBC530B137592DB015920A /* CountObjectsIntent.swift in Sources */,
+				FFA271031E68B984B811EC48 /* GuessCard.swift in Sources */,
 				D2FE33C4E92F8B609904D354 /* ModelNote.swift in Sources */,
 				508319D2C5B1A8FE4CA53120 /* Samples.swift in Sources */,
 				A9E9EE6240EAC77EE7BD8863 /* ShapeViews.swift in Sources */,

@@ -2,13 +2,10 @@ import ContourLabKit
 import FoundationModels
 import SwiftUI
 
-/// What one result screen hands the Ask sheet: the photo, Vision's count for the game, and the
-/// read-only facts the chat's tools return.
+/// What one result screen hands the Ask sheet: the photo and the read-only facts the chat's tools return.
 struct AskContext {
     let title: String
     let image: CGImage
-    /// The guessing game's question and Vision's answer; none for a surfboard.
-    let game: (question: String, actual: Int, key: String)?
     let tools: [FactTool]
 
     static func coins(image: CGImage, result: CountResult) -> AskContext {
@@ -20,7 +17,6 @@ struct AskContext {
         return AskContext(
             title: "Ask about this photo",
             image: image,
-            game: ("How many round things are in the photo? Vision reveals the count after you guess.", result.summary.count, "coins"),
             tools: [
                 FactTool(name: "countSummary", label: "count summary", description: "Reads what Vision counted in the photo.", facts: result.summary.sentence),
                 FactTool(name: "sizeGroups", label: "size groups", description: "Reads the size groups Vision sorted the round objects into, smallest first.", facts: groups.joined(separator: "\n"))
@@ -39,7 +35,6 @@ struct AskContext {
         return AskContext(
             title: kind == .leaves ? "Ask about these leaves" : "Ask about these objects",
             image: image,
-            game: ("How many separate \(noun) are in the photo? Vision reveals the count after you guess.", result.summary.count, kind.rawValue.lowercased()),
             tools: [
                 FactTool(name: "countSummary", label: "count summary", description: "Reads what Vision counted and how it sorted the shapes.", facts: result.summary.sentence),
                 FactTool(name: "objectTable", label: "object table", description: "Reads each numbered object's shape, length, width and roundness.", facts: rows.joined(separator: "\n"))
@@ -57,7 +52,6 @@ struct AskContext {
         return AskContext(
             title: "Ask about this board",
             image: image,
-            game: nil,
             tools: [
                 FactTool(name: "boardWidths", label: "board widths", description: "Reads the board's length and widths that Vision measured.", facts: widths.joined(separator: "\n")),
                 FactTool(name: "howMeasured", label: "how it was measured", description: "Explains how the outline was measured and what one photo can't tell.", facts: "Traced from one photo taken from straight above and scaled from the length the person typed. Thickness, rocker and volume need a side view.")
@@ -88,9 +82,6 @@ struct AskSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    if let game = context.game {
-                        GuessCard(question: game.question, actual: game.actual, key: game.key)
-                    }
                     ChatView(context: context)
                 }
                 .padding(16)
@@ -105,89 +96,6 @@ struct AskSheet: View {
         }
         .preferredColorScheme(.dark)
         .tint(Theme.accent)
-    }
-}
-
-/// Guess first, then Vision reveals the count. The best miss for each kind is kept on this device.
-struct GuessCard: View {
-    let question: String
-    let actual: Int
-    let key: String
-    @State private var guessText = ""
-    @State private var result: GuessResult?
-    @AppStorage private var best: Int
-
-    init(question: String, actual: Int, key: String) {
-        self.question = question
-        self.actual = actual
-        self.key = key
-        // -1 means no guess yet.
-        _best = AppStorage(wrappedValue: -1, "best.\(key)")
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Guess first")
-                    .font(.caption.weight(.bold))
-                    .textCase(.uppercase)
-                    .foregroundStyle(Theme.accent)
-                Spacer()
-                if let text = GuessResult.bestText(best >= 0 ? best : nil) {
-                    Text(text).font(.caption).foregroundStyle(Theme.secondary)
-                }
-            }
-            Text(question)
-            HStack(alignment: .bottom, spacing: 10) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Your guess").font(.caption).foregroundStyle(Theme.secondary)
-                    TextField("0", text: $guessText)
-                        .keyboardType(.numberPad)
-                        .font(.title2.weight(.heavy))
-                        .monospacedDigit()
-                        .padding(.horizontal, 14)
-                        .frame(height: 48)
-                        .background(Theme.background, in: .rect(cornerRadius: 14))
-                        .overlay { RoundedRectangle(cornerRadius: 14).stroke(Theme.stroke) }
-                        .disabled(result != nil)
-                        .accessibilityLabel("Your guess")
-                }
-                if let result {
-                    VStack(spacing: 2) {
-                        Text("Vision").font(.caption).foregroundStyle(Theme.secondary)
-                        Text(result.actual, format: .number).font(.system(size: 30, weight: .heavy)).monospacedDigit()
-                    }
-                    .padding(.horizontal, 10)
-                    .accessibilityElement(children: .combine)
-                } else {
-                    Button("Reveal") { reveal() }
-                        .buttonStyle(.borderedProminent)
-                        .frame(minHeight: 48)
-                        .disabled(Int(guessText) == nil)
-                }
-            }
-            if let result {
-                HStack {
-                    Text(result.message).foregroundStyle(Theme.warning)
-                    Spacer()
-                    Button("Guess again") {
-                        self.result = nil
-                        guessText = ""
-                    }
-                    .font(.subheadline)
-                }
-            }
-        }
-        .padding(16)
-        .background(Theme.card, in: .rect(cornerRadius: 20))
-        .overlay { RoundedRectangle(cornerRadius: 20).stroke(Theme.stroke) }
-    }
-
-    private func reveal() {
-        guard let guess = Int(guessText) else { return }
-        let scored = GuessResult(guess: guess, actual: actual)
-        best = scored.best(after: best >= 0 ? best : nil)
-        result = scored
     }
 }
 
@@ -232,9 +140,7 @@ struct ChatView: View {
                         .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty || chat.isThinking)
                 }
             } else {
-                Text(context.game == nil
-                    ? "Apple Intelligence isn't available on this device, so the chat is off. Every number on the board comes from Vision."
-                    : "Apple Intelligence isn't available on this device, so the chat is off. The guess game still works, and every number here comes from Vision.")
+                Text("Apple Intelligence isn't available on this device, so the chat is off. Every number on the result comes from Vision.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.secondary)
             }

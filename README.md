@@ -55,7 +55,7 @@ What else Vision, ARKit and RealityKit could add, and what comes next, is in [do
 
 ## Apple Intelligence and Siri
 
-- **Ask and guess.** Each result has an *Ask* button. The sheet starts with a game: guess the count, then Vision reveals it; the best miss is kept on the device. Below it, a chat with the on-device model, which can read Vision's results through two read-only Foundation Models tools (the count summary plus the size groups, object table or board widths) and sees the photo. A reply containing a digit is dropped, so every number on screen still comes from Vision.
+- **Guess first, then ask.** Coins, Leaves and Anything open with the count hidden: guess how many, or skip, and Vision reveals the count and the circles. The best miss for each kind is kept on the device. Each result then has an *Ask* button: a chat with the on-device model, which sees the photo and can read Vision's results through two read-only Foundation Models tools (the count summary plus the size groups, the object table, or the board widths). A reply containing a digit is dropped, so every number on screen still comes from Vision.
 
 - **On-device model (iOS 27).** When Apple Intelligence is available, the app shows the photo to the on-device model with Foundation Models' `Attachment` and asks what the objects are. The model never counts: it's told not to, any reply containing a digit is dropped, and the number on screen always comes from Vision.
 - **Siri and Shortcuts.** `CountObjectsIntent` counts the objects in a photo without opening the app. Say *"Count objects with Contour Lab"*, or use it in a shortcut or on the Action button.
