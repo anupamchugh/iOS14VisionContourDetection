@@ -2,180 +2,75 @@ import ContourLabKit
 import PhotosUI
 import SwiftUI
 
+/// A photo on its way to a result screen, with what the person said is in it.
+struct Photo: Hashable, Identifiable {
+    let id = UUID()
+    let image: CGImage
+    let kind: Sample
+
+    static func == (lhs: Photo, rhs: Photo) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+}
+
+/// The colours from the 2 Nov 2026 mockups.
+enum Theme {
+    static let background = Color(red: 0.055, green: 0.063, blue: 0.071)
+    static let card = Color(red: 0.098, green: 0.11, blue: 0.125)
+    static let stroke = Color(red: 0.165, green: 0.18, blue: 0.204)
+    static let secondary = Color(red: 0.64, green: 0.66, blue: 0.69)
+    static let accent = Color(red: 1, green: 0.24, blue: 0.545)
+    static let warning = Color(red: 0.965, green: 0.784, blue: 0.298)
+}
+
 struct ContentView: View {
-    /// The last sample picked, so the app reopens on it.
-    @State private var sample: Sample? = Sample(rawValue: UserDefaults.standard.string(forKey: "sample") ?? "") ?? .coins
+    @State private var path: [Photo] = []
     @State private var pickedItem: PhotosPickerItem?
-    @State private var image: CGImage?
-    @State private var result: CountResult?
-    @State private var isCounting = false
-    @State private var modelNote: String?
-    @State private var showsTable = false
-    @State private var table: TableScene?
-    @State private var mode: CountMode = .round
-    @State private var busyBackground = false
-    @State private var shapes: ShapeResult?
-    @State private var shapesFailed = false
     @State private var showsCamera = false
-    @State private var requests = RequestGeneration()
+    /// A photo the person took or chose, waiting for them to say what's in it.
+    @State private var unsorted: CGImage?
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    sourcePicker
-                    Picker("Count", selection: $mode) {
-                        ForEach(CountMode.allCases) { Text($0.title).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
-                    if mode != .round {
-                        Toggle("Busy background", isOn: $busyBackground)
-                    }
-                    if mode == .surfboard, let image {
-                        SurfboardView(image: image, busyBackground: busyBackground)
-                    } else if mode == .shapes, let image {
-                        ShapeImage(image: image, result: shapes)
-                        if isCounting {
-                            ProgressView("Measuring…")
-                        } else if let shapes {
-                            ShapeReport(result: shapes)
-                        } else if shapesFailed {
-                            ContentUnavailableView(
-                                "Couldn't measure this photo",
-                                systemImage: "exclamationmark.triangle",
-                                description: Text(busyBackground
-                                    ? "Vision's subject model isn't available here. It doesn't run in the Simulator; try a device, or turn off Busy background."
-                                    : "Try a photo with a plain background.")
-                            )
-                        }
-                    } else if let image, let result, !result.objects.isEmpty {
-                        Picker("View", selection: $showsTable) {
-                            Text("Photo").tag(false)
-                            Text("3D").tag(true)
-                        }
-                        .pickerStyle(.segmented)
-                        if showsTable, let table {
-                            TableView3D(scene: table)
-                            .aspectRatio(Double(image.width) / Double(image.height), contentMode: .fit)
-                            .clipShape(.rect(cornerRadius: 12))
-                        } else {
-                            CountedImage(image: image, result: result)
-                        }
-                    } else if let image {
-                        CountedImage(image: image, result: result)
-                    }
-                    if mode == .round {
-                        if isCounting {
-                            ProgressView("Counting…")
-                        } else if let result {
-                            CountReport(result: result, modelNote: modelNote)
-                        }
-                    }
+        NavigationStack(path: $path) {
+            StartView(
+                open: { kind in kind.image.map { path.append(Photo(image: $0, kind: kind)) } },
+                pickedItem: $pickedItem,
+                takePhoto: { showsCamera = true }
+            )
+            .navigationDestination(for: Photo.self) { photo in
+                switch photo.kind {
+                case .coins: CoinsScreen(image: photo.image)
+                case .leaves, .anything: ShapesScreen(image: photo.image, kind: photo.kind)
+                case .surfboard: SurfboardView(image: photo.image)
                 }
-                .padding()
             }
-            .navigationTitle("Contour Lab")
         }
-        .task(id: sample) {
-            guard let sample else { return }
-            UserDefaults.standard.set(sample.rawValue, forKey: "sample")
-            mode = sample.mode
-            busyBackground = sample == .busy
-            await load(sample.image)
+        .preferredColorScheme(.dark)
+        .tint(Theme.accent)
+        .confirmationDialog("What's in this photo?", isPresented: Binding(get: { unsorted != nil }, set: { if !$0 { unsorted = nil } }), titleVisibility: .visible) {
+            ForEach(Sample.allCases) { kind in
+                Button(kind.rawValue) {
+                    if let unsorted { path.append(Photo(image: unsorted, kind: kind)) }
+                    unsorted = nil
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showsCamera) {
+            CameraPicker { photo in unsorted = Self.upright(photo) }
+                .ignoresSafeArea()
         }
         .onOpenURL { url in
             // A picture Folio routed here: contourlab://import?mode=objects|surfboard&file=<name>
             guard let link = FolioImportLink(url: url), let file = link.fileURL,
-                  let photo = UIImage(contentsOfFile: file.path) else { return }
-            sample = nil
-            mode = link.mode == .surfboard ? .surfboard : .round
-            busyBackground = false
-            Task { await load(Self.upright(photo)) }
-        }
-        .onChange(of: mode) { Task { await count() } }
-        .onChange(of: busyBackground) { Task { await count() } }
-        .fullScreenCover(isPresented: $showsCamera) {
-            CameraPicker { photo in
-                sample = nil
-                Task { await load(Self.upright(photo)) }
-            }
-            .ignoresSafeArea()
+                  let photo = UIImage(contentsOfFile: file.path), let image = Self.upright(photo) else { return }
+            path = [Photo(image: image, kind: link.mode == .surfboard ? .surfboard : .coins)]
         }
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }
-            sample = nil
+            pickedItem = nil
             Task {
                 let data = try? await item.loadTransferable(type: Data.self)
-                await load(data.flatMap(UIImage.init(data:)).flatMap(Self.upright))
+                unsorted = data.flatMap(UIImage.init(data:)).flatMap(Self.upright)
             }
-        }
-    }
-
-    private var sourcePicker: some View {
-        HStack {
-            Picker("Sample", selection: $sample) {
-                ForEach(Sample.allCases) { Text($0.rawValue).tag(Optional($0)) }
-                if sample == nil { Text("Your photo").tag(Sample?.none) }
-            }
-            .pickerStyle(.segmented)
-            PhotosPicker(selection: $pickedItem, matching: .images) {
-                Label("Choose photo", systemImage: "photo.on.rectangle")
-                    .labelStyle(.iconOnly)
-                    .frame(minWidth: 44, minHeight: 44)
-            }
-            if CameraPicker.isAvailable {
-                Button("Take photo", systemImage: "camera") { showsCamera = true }
-                    .labelStyle(.iconOnly)
-                    .frame(minWidth: 44, minHeight: 44)
-            }
-        }
-    }
-
-    private func load(_ newImage: CGImage?) async {
-        image = newImage
-        await count()
-    }
-
-    private func count() async {
-        let request = requests.begin()
-        isCounting = false
-        result = nil
-        table = nil
-        shapes = nil
-        shapesFailed = false
-        modelNote = nil
-        guard let newImage = image, mode != .surfboard else { return }
-        isCounting = true
-        if mode == .shapes {
-            let busy = busyBackground
-            let measured = try? await Task.detached {
-                try ShapeCounter(mask: busy ? ForegroundMask() as any ObjectMasking : BackgroundMask()).count(in: newImage)
-            }.value
-            guard requests.isCurrent(request) else { return }
-            shapes = measured
-            shapesFailed = shapes == nil
-            isCounting = false
-            return
-        }
-        let counted = try? await Task.detached { try ContourCounter().count(in: newImage) }.value
-        guard requests.isCurrent(request) else { return }
-        result = counted
-        if let result {
-            let scene = await Task.detached {
-                TableScene(
-                    result: result,
-                    imageAspect: Double(newImage.width) / Double(newImage.height),
-                    colours: ColorSampler.averageColors(in: newImage, for: result.objects)
-                )
-            }.value
-            guard requests.isCurrent(request) else { return }
-            table = scene
-        }
-        isCounting = false
-        if let result, result.summary.count > 0, #available(iOS 27, *) {
-            let note = await ModelNote.describe(image: newImage, summary: result.summary)
-            guard requests.isCurrent(request) else { return }
-            modelNote = note
         }
     }
 
@@ -186,73 +81,188 @@ struct ContentView: View {
     }
 }
 
-/// The photo with Vision's outlines and one circle per counted object.
-struct CountedImage: View {
-    let image: CGImage
-    let result: CountResult?
+/// "What are you counting?": one tile per kind, each opening its bundled sample.
+struct StartView: View {
+    let open: (Sample) -> Void
+    @Binding var pickedItem: PhotosPickerItem?
+    let takePhoto: () -> Void
 
     var body: some View {
-        Image(decorative: image, scale: 1)
-            .resizable()
-            .scaledToFit()
-            .overlay {
-                if let result {
-                    Canvas { context, size in
-                        for outline in result.outlines {
-                            var path = Path()
-                            path.addLines(outline.map { CGPoint(x: $0.x * size.width, y: $0.y * size.height) })
-                            path.closeSubpath()
-                            context.stroke(path, with: .color(.white.opacity(0.8)), lineWidth: 1)
-                        }
-                        for object in result.objects {
-                            let box = object.boundingBox
-                            let rect = CGRect(
-                                x: box.minX * size.width, y: box.minY * size.height,
-                                width: box.width * size.width, height: box.height * size.height
-                            )
-                            context.stroke(Path(ellipseIn: rect), with: .color(.pink), lineWidth: 2.5)
-                        }
-                    }
-                    .allowsHitTesting(false)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Contour Lab")
+                        .font(.largeTitle.weight(.heavy))
+                    Text("What are you counting?")
+                        .foregroundStyle(Theme.secondary)
                 }
+                .padding(.horizontal, 4)
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                    ForEach(Sample.allCases) { kind in
+                        Button { open(kind) } label: { Tile(kind: kind) }
+                            .buttonStyle(.plain)
+                    }
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("For a good count").font(.footnote.weight(.bold))
+                    Text("Shoot from straight above, on a plain sheet that differs from the objects. On a busy table, turn on Busy background and Vision's subject mask finds the objects instead.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.secondary)
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.card.opacity(0.7), in: .rect(cornerRadius: 18))
             }
-            .clipShape(.rect(cornerRadius: 12))
-            .accessibilityLabel(result?.summary.sentence ?? "Photo")
+            .padding(16)
+        }
+        .background(Theme.background)
+        .safeAreaInset(edge: .bottom) {
+            HStack(spacing: 10) {
+                if CameraPicker.isAvailable {
+                    Button(action: takePhoto) {
+                        Text("Take photo").font(.headline.weight(.heavy)).frame(maxWidth: .infinity, minHeight: 56)
+                    }
+                    .background(Theme.accent, in: .rect(cornerRadius: 18))
+                    .foregroundStyle(Theme.background)
+                }
+                PhotosPicker(selection: $pickedItem, matching: .images) {
+                    Text("Choose photo").font(.headline).frame(maxWidth: .infinity, minHeight: 56)
+                }
+                .background(Theme.card, in: .rect(cornerRadius: 18))
+                .overlay { RoundedRectangle(cornerRadius: 18).stroke(Theme.stroke) }
+                .foregroundStyle(.primary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
+            .background(Theme.background)
+        }
+        .toolbarVisibility(.hidden, for: .navigationBar)
     }
 }
 
-struct CountReport: View {
-    let result: CountResult
-    let modelNote: String?
+private struct Tile: View {
+    let kind: Sample
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(result.summary.count, format: .number)
-                .font(.system(size: 64, weight: .bold, design: .rounded))
-                .monospacedDigit()
-            Text(result.summary.sentence)
-                .font(.headline)
-            if result.groups.count > 1 {
-                ForEach(Array(result.groups.enumerated()), id: \.offset) { index, group in
-                    LabeledContent("Size group \(index + 1)") {
-                        Text("\(group.count) × about \(Int(group.map(\.diameter).reduce(0, +) / Double(group.count))) px wide")
-                    }
-                }
+        VStack(alignment: .leading) {
+            TileArt(kind: kind)
+                .frame(height: 70, alignment: .leading)
+            Spacer()
+            Text(kind.rawValue).font(.title3.weight(.bold))
+            Text(kind.subtitle).font(.footnote).foregroundStyle(Theme.secondary)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 188, alignment: .leading)
+        .background(Theme.card, in: .rect(cornerRadius: 22))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(kind == .anything ? Color.gray.opacity(0.5) : Theme.stroke, style: StrokeStyle(lineWidth: 1, dash: kind == .anything ? [5, 4] : []))
+        }
+        .contentShape(.rect(cornerRadius: 22))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// The small drawings on each tile, after the mockup.
+private struct TileArt: View {
+    let kind: Sample
+
+    var body: some View {
+        Canvas { context, _ in
+            let pink = GraphicsContext.Shading.color(Theme.accent)
+            func draw(_ path: Path, _ fill: Color) {
+                context.fill(path, with: .color(fill))
+                context.stroke(path, with: pink, lineWidth: 2.5)
             }
-            if let modelNote {
-                VStack(alignment: .leading, spacing: 4) {
-                    Label("On-device model", systemImage: "apple.intelligence")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Text(modelNote)
-                    Text("The count above is Vision's. The model only says what the objects look like.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            switch kind {
+            case .coins:
+                for (x, y, r, colour) in [(22.0, 22.0, 16.0, Color(red: 0.72, green: 0.54, blue: 0.25)), (58, 20, 13, Color(red: 0.54, green: 0.32, blue: 0.2)), (40, 50, 15, Color(red: 0.79, green: 0.63, blue: 0.31)), (78, 48, 12, Color(white: 0.6))] {
+                    draw(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: 2 * r, height: 2 * r)), colour)
                 }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.quaternary, in: .rect(cornerRadius: 12))
+            case .leaves:
+                var one = Path()
+                one.move(to: CGPoint(x: 8, y: 58))
+                one.addCurve(to: CGPoint(x: 62, y: 8), control1: CGPoint(x: 14, y: 26), control2: CGPoint(x: 38, y: 10))
+                one.addCurve(to: CGPoint(x: 8, y: 58), control1: CGPoint(x: 58, y: 34), control2: CGPoint(x: 38, y: 56))
+                draw(one, Color(red: 0.31, green: 0.54, blue: 0.24))
+                var two = Path()
+                two.move(to: CGPoint(x: 54, y: 62))
+                two.addCurve(to: CGPoint(x: 90, y: 32), control1: CGPoint(x: 60, y: 44), control2: CGPoint(x: 74, y: 34))
+                two.addCurve(to: CGPoint(x: 54, y: 62), control1: CGPoint(x: 86, y: 48), control2: CGPoint(x: 74, y: 60))
+                draw(two, Color(red: 0.48, green: 0.64, blue: 0.29))
+            case .surfboard:
+                var board = Path()
+                board.move(to: CGPoint(x: 6, y: 35))
+                board.addCurve(to: CGPoint(x: 112, y: 24), control1: CGPoint(x: 30, y: 20), control2: CGPoint(x: 70, y: 16))
+                board.addLine(to: CGPoint(x: 112, y: 46))
+                board.addCurve(to: CGPoint(x: 6, y: 35), control1: CGPoint(x: 70, y: 54), control2: CGPoint(x: 30, y: 50))
+                draw(board, Color(red: 0.96, green: 0.94, blue: 0.88))
+                var station = Path()
+                station.move(to: CGPoint(x: 50, y: 19))
+                station.addLine(to: CGPoint(x: 50, y: 51))
+                context.stroke(station, with: .color(.cyan), lineWidth: 2)
+            case .anything:
+                let grey = Color(white: 0.5)
+                draw(Path(roundedRect: CGRect(x: 8, y: 14, width: 22, height: 10), cornerRadius: 3), grey)
+                draw(Path(ellipseIn: CGRect(x: 40, y: 12, width: 20, height: 20)), grey)
+                var cone = Path()
+                cone.addLines([CGPoint(x: 14, y: 44), CGPoint(x: 26, y: 44), CGPoint(x: 32, y: 58), CGPoint(x: 8, y: 58)])
+                cone.closeSubpath()
+                draw(cone, grey)
+                draw(Path(roundedRect: CGRect(x: 40, y: 42, width: 20, height: 18), cornerRadius: 4), grey)
             }
         }
+        .frame(width: 120)
+        .accessibilityHidden(true)
+    }
+}
+
+extension Sample {
+    var subtitle: String {
+        switch self {
+        case .coins: "and anything round"
+        case .leaves: "any shape, measured"
+        case .surfboard: "outline and widths"
+        case .anything: "screws, keys, pills"
+        }
+    }
+}
+
+/// The "Ask about…" button pinned under each result.
+struct AskButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: "sparkles")
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 52)
+        }
+        .background(Theme.card, in: .rect(cornerRadius: 16))
+        .overlay { RoundedRectangle(cornerRadius: 16).stroke(Theme.stroke) }
+        .foregroundStyle(.primary)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+        .background(Theme.background)
+    }
+}
+
+/// The big number and what it counts.
+struct Headline: View {
+    let count: String
+    let caption: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text(count)
+                .font(.system(size: 64, weight: .heavy))
+                .monospacedDigit()
+            Text(caption)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(Theme.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 }

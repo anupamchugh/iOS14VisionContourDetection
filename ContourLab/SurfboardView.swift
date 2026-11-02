@@ -4,15 +4,15 @@ import SwiftUI
 /// Surfboard mode: type the board's length, see its outline and the widths shapers quote.
 struct SurfboardView: View {
     let image: CGImage
-    let busyBackground: Bool
+    @State private var busyBackground = false
     @State private var lengthText = "6'2\""
     @State private var swapsEnds = false
     @State private var outline: BoardOutline?
     @State private var failure: String?
     @State private var isMeasuring = false
+    @State private var asks = false
 
     private struct Input: Hashable {
-        let image: ObjectIdentifier
         let length: Double?
         let swapsEnds: Bool
         let busy: Bool
@@ -21,30 +21,66 @@ struct SurfboardView: View {
     private var length: Double? { BoardLength.millimetres(from: lengthText) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            LabeledContent("Board length") {
-                TextField("6'2\"", text: $lengthText)
-                    .multilineTextAlignment(.trailing)
-                    .keyboardType(.numbersAndPunctuation)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .monospacedDigit()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                BoardImage(image: image, outline: outline)
+                    .clipShape(.rect(cornerRadius: 20))
+                HStack(alignment: .bottom) {
+                    Text(outline.map { BoardLength.feetAndInches($0.length) } ?? " ")
+                        .font(.system(size: 64, weight: .heavy))
+                        .monospacedDigit()
+                    Spacer()
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Length you typed").font(.caption).foregroundStyle(Theme.secondary)
+                        TextField("6'2\"", text: $lengthText)
+                            .font(.title3)
+                            .keyboardType(.numbersAndPunctuation)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                            .monospacedDigit()
+                            .padding(.horizontal, 12)
+                            .frame(width: 104, height: 44)
+                            .background(Theme.card, in: .rect(cornerRadius: 12))
+                            .overlay { RoundedRectangle(cornerRadius: 12).stroke(Theme.stroke) }
+                            .accessibilityLabel("Board length")
+                    }
+                }
+                .padding(.horizontal, 8)
+                if length == nil {
+                    Text("Type the length as feet and inches, like 6'2\" or 9'0\".")
+                        .font(.caption)
+                        .foregroundStyle(Theme.warning)
+                        .padding(.horizontal, 8)
+                }
+                if isMeasuring {
+                    ProgressView("Measuring…").frame(maxWidth: .infinity).padding()
+                } else if let outline {
+                    BoardReport(outline: outline)
+                } else if let failure {
+                    ContentUnavailableView("Couldn't measure this photo", systemImage: "exclamationmark.triangle", description: Text(failure))
+                }
             }
-            if length == nil {
-                Text("Type the length as feet and inches, like 6'2\" or 9'0\".")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
-            BoardImage(image: image, outline: outline)
-            if isMeasuring {
-                ProgressView("Measuring…")
-            } else if let outline {
-                BoardReport(outline: outline, swapsEnds: $swapsEnds)
-            } else if let failure {
-                ContentUnavailableView("Couldn't measure this photo", systemImage: "exclamationmark.triangle", description: Text(failure))
+            .padding(12)
+        }
+        .background(Theme.background)
+        .safeAreaInset(edge: .bottom) {
+            if let outline {
+                AskButton(title: "Ask about this board") { asks = true }
+                    .sheet(isPresented: $asks) { AskSheet(context: .board(image: image, outline: outline)) }
             }
         }
-        .task(id: Input(image: ObjectIdentifier(image), length: length, swapsEnds: swapsEnds, busy: busyBackground)) {
+        .navigationTitle("Surfboard")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Swap nose and tail", systemImage: "arrow.left.arrow.right") { swapsEnds.toggle() }
+                    .disabled(outline == nil)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Toggle("Busy background", systemImage: "square.stack.3d.down.forward", isOn: $busyBackground)
+            }
+        }
+        .task(id: Input(length: length, swapsEnds: swapsEnds, busy: busyBackground)) {
             await measure()
         }
     }
@@ -115,7 +151,7 @@ struct BoardImage: View {
                         var rail = Path()
                         rail.addLines(outline.outline.map(point))
                         rail.closeSubpath()
-                        context.stroke(rail, with: .color(.pink), lineWidth: 2.5)
+                        context.stroke(rail, with: .color(Theme.accent), lineWidth: 3)
 
                         var stringer = Path()
                         stringer.move(to: point(outline.nose))
@@ -165,45 +201,48 @@ struct BoardImage: View {
 
 struct BoardReport: View {
     let outline: BoardOutline
-    @Binding var swapsEnds: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(BoardLength.feetAndInches(outline.length))
-                .font(.system(size: 56, weight: .bold, design: .rounded))
-                .monospacedDigit()
-            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(spacing: 0) {
                 row("Length", BoardUnits.text(outline.length))
+                Divider().overlay(Theme.stroke)
                 row("Wide point", BoardUnits.text(outline.wideWidth))
-                row("", widePointPlace)
+                Divider().overlay(Theme.stroke)
+                row("Wide point sits", widePointPlace)
+                Divider().overlay(Theme.stroke)
                 row("Nose, 12\" in", BoardUnits.text(outline.noseWidth))
+                Divider().overlay(Theme.stroke)
                 row("Tail, 12\" in", BoardUnits.text(outline.tailWidth))
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Theme.card, in: .rect(cornerRadius: 18))
             if let note = outline.otherObjectsNote {
                 Label(note, systemImage: "info.circle")
                     .font(.subheadline)
+                    .padding(.horizontal, 8)
             }
-            Button("Swap nose and tail", systemImage: "arrow.up.arrow.down") { swapsEnds.toggle() }
-                .buttonStyle(.bordered)
-            Text("Measured from one photo taken from above, scaled from the length you typed. Thickness, rocker and volume need a side view.")
+            Text("From one photo taken from above, scaled from the length you typed. Thickness, rocker and volume need a side view.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.secondary)
+                .padding(.horizontal, 8)
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary, in: .rect(cornerRadius: 12))
     }
 
-    private var widePointPlace: String {
+    var widePointPlace: String {
         let offset = outline.widePointFromCentre
         guard abs(offset) >= 25.4 / 8 else { return "at the centre" }
         return "\(BoardUnits.text(abs(offset))) \(offset > 0 ? "ahead of" : "behind") centre"
     }
 
     private func row(_ name: String, _ value: String) -> some View {
-        GridRow {
-            Text(name).foregroundStyle(.secondary)
+        HStack {
+            Text(name).foregroundStyle(Theme.secondary)
+            Spacer()
             Text(value).monospacedDigit()
         }
+        .padding(.vertical, 10)
+        .accessibilityElement(children: .combine)
     }
 }

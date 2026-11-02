@@ -21,13 +21,13 @@ Works best with a plain background that differs in colour from the objects, and 
 
 ## Any shape
 
-Switch to **Any shape** to count things that aren't round, such as screws, keys or leaves. Each separate area is one object. For each object the app reports:
+Pick **Leaves** or **Anything** on the start screen to count things that aren't round, such as screws, keys or leaves. Each separate area is one object. For each object the app reports:
 
 - **Length:** its greatest extent, drawn as a dashed line.
 - **Width:** its narrowest extent.
 - **Roundness:** 4·area ÷ (π·length²). That is 1 for a disc, about 0.64 for a square and near 0 for a rod.
 
-From those numbers each object is called long, round or compact. Length and width come from the object's convex hull, so they don't change when the object is turned. Objects that touch count as one.
+From those numbers each object is called long, round or compact. The objects are numbered on the photo and listed in a table. Lengths are in photo pixels; lay a coin beside the objects and pick it as the reference coin (1 €, 2 €, US quarter or ₹10) to get centimetres. Length and width come from the object's convex hull, so they don't change when the object is turned. Objects that touch count as one.
 
 | Round things: 37 circles, wrong | Any shape: 7 objects, right |
 |---|---|
@@ -37,7 +37,7 @@ On a **busy background**, turn on *Busy background*. The colour mask is then rep
 
 ## Surfboards
 
-Switch to **Surfboard**, photograph a board lying on the floor from straight above, and type its length (`6'2"`). The app draws the outline and reports the length, the wide point and how far it sits ahead of or behind centre, and the widths 12 inches from the nose and the tail, in your locale's units with inches alongside. It measures; it doesn't rate boards. One photo can't give thickness, rocker or volume. How to shoot it and how accurate it is: [docs/beyond-coins.md](docs/beyond-coins.md#surfboards).
+Pick **Surfboard**, photograph a board lying on the floor from straight above, and type its length (`6'2"`). The app draws the outline and reports the length, the wide point and how far it sits ahead of or behind centre, and the widths 12 inches from the nose and the tail, in your locale's units with inches alongside. It measures; it doesn't rate boards. One photo can't give thickness, rocker or volume. How to shoot it and how accurate it is: [docs/beyond-coins.md](docs/beyond-coins.md#surfboards).
 
 <img src="docs/surfboard.png" width="300" alt="A 6'2 shortboard outlined with its nose, wide point and tail widths labelled">
 
@@ -45,7 +45,7 @@ The **Board** sample is drawn in code, so there is no photo licence to track.
 
 ## 3D table
 
-Switch to **3D** and each counted object becomes a token on a table you can drag to turn. Each token keeps its place and relative size from the photo and is tinted with its average colour. It's built with RealityKit's `RealityView` and works in the simulator. The scale is relative: without a reference object it isn't real-world size.
+On the Coins result, switch to **3D** and each counted object becomes a token on a table you can drag to turn. Each token keeps its place and relative size from the photo and is tinted with its average colour. It's built with RealityKit's `RealityView` and works in the simulator. The scale is relative: without a reference object it isn't real-world size.
 
 | Photo | 3D |
 |---|---|
@@ -54,6 +54,8 @@ Switch to **3D** and each counted object becomes a token on a table you can drag
 What else Vision, ARKit and RealityKit could add, and what comes next, is in [docs/beyond-coins.md](docs/beyond-coins.md).
 
 ## Apple Intelligence and Siri
+
+- **Guess first, then ask.** Coins, Leaves and Anything open with the count hidden: guess how many, or skip, and Vision reveals the count and the circles. The best miss for each kind is kept on the device. Each result then has an *Ask* button: a chat with the on-device model, which sees the photo and can read Vision's results through two read-only Foundation Models tools (the count summary plus the size groups, the object table, or the board widths). A reply containing a digit is dropped, so every number on screen still comes from Vision. `swift test` runs the chat against the real on-device model on a Mac with Apple Intelligence on (the iOS Simulator doesn't have it) and checks that a reply coaxed into giving a count is dropped.
 
 - **On-device model (iOS 27).** When Apple Intelligence is available, the app shows the photo to the on-device model with Foundation Models' `Attachment` and asks what the objects are. The model never counts: it's told not to, any reply containing a digit is dropped, and the number on screen always comes from Vision.
 - **Siri and Shortcuts.** `CountObjectsIntent` counts the objects in a photo without opening the app. Say *"Count objects with Contour Lab"*, or use it in a shortcut or on the Action button.
@@ -66,7 +68,7 @@ xcodegen generate
 open ContourLab.xcodeproj
 ```
 
-Requires Xcode 27 and iOS 26 or later. The on-device model needs iOS 27 on a device with Apple Intelligence.
+Requires Xcode 27 and iOS 27 or later. The on-device model needs a device with Apple Intelligence.
 
 Run the counter's tests on the Mac (Vision runs on macOS too):
 
@@ -78,7 +80,7 @@ cd ContourLabKit && swift test
 
 | Path | What |
 |---|---|
-| `ContourLabKit/` | The counter as a Swift package: `BackgroundMask`, `ForegroundMask`, `CircleFinder`, `ContourCounter`, `ShapeCounter`, `ShapeMetrics`, `CountSummary`, and `ColorSampler` plus `TableScene` for 3D, with tests |
+| `ContourLabKit/` | The counter as a Swift package: `BackgroundMask`, `ForegroundMask`, `CircleFinder`, `ContourCounter`, `ShapeCounter`, `ShapeMetrics`, `CountSummary`, `ColorSampler` plus `TableScene` for 3D, `BoardOutline`, and `AskSession` with its read-only `FactTool`s, with tests |
 | `ContourLab/` | The SwiftUI app, the RealityKit table, the on-device model note and the App Intent |
 | `project.yml` | XcodeGen project for iPhone and iPad |
 
