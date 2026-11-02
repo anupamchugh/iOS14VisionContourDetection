@@ -74,7 +74,7 @@ public struct ShapeCounter: Sendable {
     }
 
     public func count(in image: CGImage) throws -> ShapeResult {
-        guard let objectMask = try mask.mask(for: image), let maskImage = objectMask.image() else {
+        guard let (objectMask, areas) = try objectAreas(in: image), let maskImage = objectMask.image() else {
             return ShapeResult(shapes: [], outlines: [], summary: ShapeSummary(kinds: [:], longestToShortest: 1))
         }
         let width = Double(objectMask.width), height = Double(objectMask.height)
@@ -82,7 +82,7 @@ public struct ShapeCounter: Sendable {
         let minimumArea = minimumAreaFraction * width * height
 
         var shapes: [MeasuredShape] = []
-        for component in Self.components(of: objectMask) where Double(component.count) >= minimumArea {
+        for component in areas {
             let hull = Self.convexHull(Self.boundaryCorners(component, mask: objectMask))
             let feret = Self.feret(hull)
             let area = Double(component.count) * toSource * toSource
@@ -111,6 +111,14 @@ public struct ShapeCounter: Sendable {
             longestToShortest: (lengths.max() ?? 1) / max(lengths.min() ?? 1, 1)
         )
         return ShapeResult(shapes: shapes, outlines: outlines, summary: summary)
+    }
+
+    /// The object mask and the pixel indices of each object area at least `minimumAreaFraction` of the
+    /// image, in reading order.
+    func objectAreas(in image: CGImage) throws -> (mask: ObjectMask, areas: [[Int]])? {
+        guard let objectMask = try mask.mask(for: image) else { return nil }
+        let minimumArea = minimumAreaFraction * Double(objectMask.width * objectMask.height)
+        return (objectMask, Self.components(of: objectMask).filter { Double($0.count) >= minimumArea })
     }
 
     /// Pixel indices of each 4-connected object area.

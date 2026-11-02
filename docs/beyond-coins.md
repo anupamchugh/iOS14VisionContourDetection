@@ -24,6 +24,36 @@ A photo alone gives sizes in pixels. Three ways to turn them into millimetres:
 
 With millimetres, euro or rupee coins could be named by diameter and totalled. That needs about 0.5 mm accuracy, so check it on real photos before promising it.
 
+## Surfboards
+
+**Surfboard** mode turns one photo of a board lying on the floor into its outline and the measures shapers quote. It is a measuring tool: it reports sizes and never rates a board.
+
+<img src="surfboard.png" width="300" alt="A 6'2 shortboard outlined, with nose 11½, wide 19⅛ and tail 14¼ inch widths labelled and a result card">
+
+**What it measures.** `BoardOutline` takes the largest object `ShapeCounter` finds; any smaller ones are left out, and the result says how many. The long axis of the board's pixels is the stringer line, so the photo can be turned any way. Along that line it reads:
+
+- **Length**, which is the length you type (see scale, below).
+- **Wide point**: the widest width, and how far it sits ahead of or behind the middle of the length.
+- **Nose and tail widths**, 12 inches (304.8 mm) from each end.
+- **The outline** as half-widths at 61 even steps from nose to tail, for drawing now and exporting later.
+
+The narrower, more pointed end is taken as the nose, because tails are cut off (squash, square, swallow). A round-nosed longboard with a pin tail can fool that, so the result has a *Swap nose and tail* button.
+
+**Scale.** You type the board's length as it is stamped on the stringer, such as `6'2"`, and every other measure is scaled from it. A bank card, the reference for coins above, is the wrong tool here: on a photo wide enough for a 6-foot board the card covers about 4% of the frame, so one pixel of error on the card is 2–3% on every measure, close to an inch of length. The board's own length spans the whole photo, so the same pixel costs about 0.1%. `ScaleSource.lidarDepth` is reserved for the LiDAR step below.
+
+**How to shoot it.**
+
+1. Lay the board deck up on a plain floor that differs from it in colour: a white board on grey concrete or dark grass, not on white tiles. On a patterned floor, turn on *Busy background*; it uses Vision's subject model, which runs on devices but not in the Simulator.
+2. Stand on something and shoot from straight above, with the camera over the middle of the board. A photo taken at an angle makes the far end look narrower.
+3. Fit the whole board in the frame with a little floor around it, and keep feet, leashes and other boards out of it.
+4. Use the main (1×) camera rather than the ultra-wide, whose edges bend straight lines.
+
+**Accuracy on drawn boards.** The tests draw a 6'2" shortboard and a 9'0" longboard from known measures, flat, turned, on a striped floor and next to a second board. Widths come out within ¼ inch (½ inch on the striped floor), and the board is within 1/16 inch of its widest where the wide point is reported. The wide point's *position* is looser, within 1½ inches: near it the rails run almost parallel, and on the longboard the width stays within 1/50 inch of its widest for about 4 inches. No photo, and no tape measure, pins it closer. Real photos add lens distortion and camera tilt, so check them against a tape before trusting the last eighth.
+
+**What one photo can't measure.** A photo from above only sees the outline. *Thickness*, *rocker* (how much the nose and tail curve up) and *volume* (in litres, which needs thickness and the shape of the rails across the whole board) all need a view from the side or depth.
+
+**Next: LiDAR.** On an iPhone or iPad with LiDAR, ARKit's `ARFrame.sceneDepth` gives the distance to every pixel. With it the outline could be scaled with nothing typed (`ScaleSource.lidarDepth`), and a pass along the board's side, or a scan of it standing on its rail, could give thickness and rocker, and with the outline an estimate of volume. That needs a real device, so it isn't built yet.
+
 ## Into 3D with RealityKit
 
 - **Tokens.** Each counted object becomes a short cylinder: `MeshResource.generateCylinder`, sized from Vision's measured diameter and tinted with the object's average colour from the photo. A `RealityView` with `realityViewCameraControls(.orbit)` (iOS 18+) lets you turn the table around. It works in the simulator with no camera.
@@ -36,3 +66,4 @@ With millimetres, euro or rupee coins could be named by diameter and totalled. T
 1. **Lift into 3D (built in this branch).** Counted objects become colour-matched tokens on a table you can orbit. It works in the simulator, and it is the base the AR overlay and the visionOS volume reuse.
 2. **Real size from a bank card.** Find the card with `DetectRectanglesRequest`, convert pixels to millimetres, and show each object's diameter. Tokens then become life-size, which is what AR placement needs.
 3. **Any shape, any background (counting built).** `ShapeCounter` counts each separate area and measures its length, width and roundness. `ForegroundMask` (`VNGenerateForegroundInstanceMaskRequest`) replaces the colour mask on busy backgrounds. Still to do: extrude each outline into a 3D piece instead of drawing a cylinder.
+4. **Surfboards (built).** One photo gives a board's outline, wide point and nose and tail widths, scaled from its typed length. Thickness, rocker and volume wait for the LiDAR step.

@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		1FD244ACA7A96F45B4ACE1E0 /* TableView3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EE4A5A9F1A67115E809C78 /* TableView3D.swift */; };
+		2BA4ADCF0A8B77BC14DCC43B /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2973225FB2C72A650E29D918 /* CameraPicker.swift */; };
 		508319D2C5B1A8FE4CA53120 /* Samples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16276AB844A39EEDFF216892 /* Samples.swift */; };
 		57796B4E52FB1FBD5C67A610 /* ContourLabKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3B733E547163D41CE5134694 /* ContourLabKit */; };
 		5CFBC530B137592DB015920A /* CountObjectsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */; };
 		9E45ACA970542D79F1A1D082 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F426D914177F22495F9946E5 /* ContentView.swift */; };
+		A9D4DA1A790F94C6C8B1FA2B /* SurfboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFDB8F50D7D3894BF0CA9807 /* SurfboardView.swift */; };
 		A9E9EE6240EAC77EE7BD8863 /* ShapeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4123E18100EC6857C99B9FC /* ShapeViews.swift */; };
 		D2FE33C4E92F8B609904D354 /* ModelNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */; };
 		DAB1DB06B11C1010752BBF30 /* ContourLabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */; };
@@ -20,6 +22,7 @@
 
 /* Begin PBXFileReference section */
 		16276AB844A39EEDFF216892 /* Samples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Samples.swift; sourceTree = "<group>"; };
+		2973225FB2C72A650E29D918 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		53C0A960F20FBBC9258526AC /* ContourLabKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ContourLabKit; path = ContourLabKit; sourceTree = SOURCE_ROOT; };
 		72EE4A5A9F1A67115E809C78 /* TableView3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView3D.swift; sourceTree = "<group>"; };
 		80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContourLabApp.swift; sourceTree = "<group>"; };
@@ -28,6 +31,7 @@
 		C47BB0B40B0650047464EA17 /* ContourLab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ContourLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D22F8F8A2325B32C8BB81951 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelNote.swift; sourceTree = "<group>"; };
+		EFDB8F50D7D3894BF0CA9807 /* SurfboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfboardView.swift; sourceTree = "<group>"; };
 		F426D914177F22495F9946E5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -72,12 +76,14 @@
 			isa = PBXGroup;
 			children = (
 				D22F8F8A2325B32C8BB81951 /* Assets.xcassets */,
+				2973225FB2C72A650E29D918 /* CameraPicker.swift */,
 				F426D914177F22495F9946E5 /* ContentView.swift */,
 				80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */,
 				9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */,
 				EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */,
 				16276AB844A39EEDFF216892 /* Samples.swift */,
 				A4123E18100EC6857C99B9FC /* ShapeViews.swift */,
+				EFDB8F50D7D3894BF0CA9807 /* SurfboardView.swift */,
 				72EE4A5A9F1A67115E809C78 /* TableView3D.swift */,
 			);
 			path = ContourLab;
@@ -158,12 +164,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BA4ADCF0A8B77BC14DCC43B /* CameraPicker.swift in Sources */,
 				9E45ACA970542D79F1A1D082 /* ContentView.swift in Sources */,
 				DAB1DB06B11C1010752BBF30 /* ContourLabApp.swift in Sources */,
 				5CFBC530B137592DB015920A /* CountObjectsIntent.swift in Sources */,
 				D2FE33C4E92F8B609904D354 /* ModelNote.swift in Sources */,
 				508319D2C5B1A8FE4CA53120 /* Samples.swift in Sources */,
 				A9E9EE6240EAC77EE7BD8863 /* ShapeViews.swift in Sources */,
+				A9D4DA1A790F94C6C8B1FA2B /* SurfboardView.swift in Sources */,
 				1FD244ACA7A96F45B4ACE1E0 /* TableView3D.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -237,6 +245,7 @@
 				DEVELOPMENT_TEAM = M6P56H6G97;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Contour Lab";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Contour Lab uses the camera to photograph the objects or surfboard you want to measure.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -267,6 +276,7 @@
 				DEVELOPMENT_TEAM = M6P56H6G97;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Contour Lab";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Contour Lab uses the camera to photograph the objects or surfboard you want to measure.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

@@ -35,6 +35,14 @@ From those numbers each object is called long, round or compact. Length and widt
 
 On a **busy background**, turn on *Busy background*. The colour mask is then replaced with Vision's `VNGenerateForegroundInstanceMaskRequest`, the model that lifts a subject out of a photo. It finds a photo's main subjects, so it suits a few objects better than a heap of coins. The model runs on devices and on the Mac (it passes the tests there), but not in the iOS Simulator, where the app says so.
 
+## Surfboards
+
+Switch to **Surfboard**, photograph a board lying on the floor from straight above, and type its length (`6'2"`). The app draws the outline and reports the length, the wide point and how far it sits ahead of or behind centre, and the widths 12 inches from the nose and the tail, in your locale's units with inches alongside. It measures; it doesn't rate boards. One photo can't give thickness, rocker or volume. How to shoot it and how accurate it is: [docs/beyond-coins.md](docs/beyond-coins.md#surfboards).
+
+<img src="docs/surfboard.png" width="300" alt="A 6'2 shortboard outlined with its nose, wide point and tail widths labelled">
+
+The **Board** sample is drawn in code, so there is no photo licence to track.
+
 ## 3D table
 
 Switch to **3D** and each counted object becomes a token on a table you can drag to turn. Each token keeps its place and relative size from the photo and is tinted with its average colour. It's built with RealityKit's `RealityView` and works in the simulator. The scale is relative: without a reference object it isn't real-world size.

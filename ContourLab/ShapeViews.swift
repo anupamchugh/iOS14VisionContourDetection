@@ -2,9 +2,15 @@ import ContourLabKit
 import SwiftUI
 
 enum CountMode: String, CaseIterable, Identifiable {
-    case round, shapes
+    case round, shapes, surfboard
     var id: Self { self }
-    var title: String { self == .round ? "Round things" : "Any shape" }
+    var title: String {
+        switch self {
+        case .round: "Round things"
+        case .shapes: "Any shape"
+        case .surfboard: "Surfboard"
+        }
+    }
 }
 
 /// The photo with each object's outline and a line along its length.
