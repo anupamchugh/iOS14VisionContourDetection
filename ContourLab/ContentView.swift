@@ -82,6 +82,15 @@ struct ContentView: View {
             busyBackground = sample == .busy
             await load(sample.image)
         }
+        .onOpenURL { url in
+            // A picture Folio routed here: contourlab://import?mode=objects|surfboard&file=<name>
+            guard let link = FolioImportLink(url: url), let file = link.fileURL,
+                  let photo = UIImage(contentsOfFile: file.path) else { return }
+            sample = nil
+            mode = link.mode == .surfboard ? .surfboard : .round
+            busyBackground = false
+            Task { await load(Self.upright(photo)) }
+        }
         .onChange(of: mode) { Task { await count() } }
         .onChange(of: busyBackground) { Task { await count() } }
         .fullScreenCover(isPresented: $showsCamera) {
@@ -136,14 +145,19 @@ struct ContentView: View {
         isCounting = true
         if mode == .shapes {
             let busy = busyBackground
-            shapes = try? await Task.detached {
+            let measured = try? await Task.detached {
                 try ShapeCounter(mask: busy ? ForegroundMask() as any ObjectMasking : BackgroundMask()).count(in: newImage)
             }.value
+            // A newer photo arrived while this one was measured; its own count fills the view.
+            guard image === newImage else { return }
+            shapes = measured
             shapesFailed = shapes == nil
             isCounting = false
             return
         }
-        result = try? await Task.detached { try ContourCounter().count(in: newImage) }.value
+        let counted = try? await Task.detached { try ContourCounter().count(in: newImage) }.value
+        guard image === newImage else { return }
+        result = counted
         if let result {
             table = await Task.detached {
                 TableScene(
