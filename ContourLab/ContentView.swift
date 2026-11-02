@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var shapes: ShapeResult?
     @State private var shapesFailed = false
     @State private var showsCamera = false
+    @State private var requests = RequestGeneration()
 
     var body: some View {
         NavigationStack {
@@ -136,6 +137,8 @@ struct ContentView: View {
     }
 
     private func count() async {
+        let request = requests.begin()
+        isCounting = false
         result = nil
         table = nil
         shapes = nil
@@ -148,28 +151,31 @@ struct ContentView: View {
             let measured = try? await Task.detached {
                 try ShapeCounter(mask: busy ? ForegroundMask() as any ObjectMasking : BackgroundMask()).count(in: newImage)
             }.value
-            // A newer photo arrived while this one was measured; its own count fills the view.
-            guard image === newImage else { return }
+            guard requests.isCurrent(request) else { return }
             shapes = measured
             shapesFailed = shapes == nil
             isCounting = false
             return
         }
         let counted = try? await Task.detached { try ContourCounter().count(in: newImage) }.value
-        guard image === newImage else { return }
+        guard requests.isCurrent(request) else { return }
         result = counted
         if let result {
-            table = await Task.detached {
+            let scene = await Task.detached {
                 TableScene(
                     result: result,
                     imageAspect: Double(newImage.width) / Double(newImage.height),
                     colours: ColorSampler.averageColors(in: newImage, for: result.objects)
                 )
             }.value
+            guard requests.isCurrent(request) else { return }
+            table = scene
         }
         isCounting = false
         if let result, result.summary.count > 0, #available(iOS 27, *) {
-            modelNote = await ModelNote.describe(image: newImage, summary: result.summary)
+            let note = await ModelNote.describe(image: newImage, summary: result.summary)
+            guard requests.isCurrent(request) else { return }
+            modelNote = note
         }
     }
 

@@ -50,23 +50,29 @@ struct SurfboardView: View {
     }
 
     private func measure() async {
+        guard !Task.isCancelled else { return }
         outline = nil
         failure = nil
+        isMeasuring = false
         guard let length else { return }
         isMeasuring = true
-        defer { isMeasuring = false }
+        defer { if !Task.isCancelled { isMeasuring = false } }
         let image = image, swaps = swapsEnds, busy = busyBackground
         do {
-            outline = try await Task.detached {
+            let measured = try await Task.detached {
                 try BoardOutline(
                     tracing: image, scale: .typedLength(millimetres: length),
                     counter: ShapeCounter(mask: busy ? ForegroundMask() as any ObjectMasking : BackgroundMask()),
                     swapsEnds: swaps
                 )
             }.value
+            guard !Task.isCancelled else { return }
+            outline = measured
         } catch BoardOutline.Failure.tooShort {
+            guard !Task.isCancelled else { return }
             failure = "Nose and tail widths are taken 12 inches from each end, so the board must be longer than 2 feet."
         } catch {
+            guard !Task.isCancelled else { return }
             failure = busy
                 ? "Vision's subject model isn't available here. It doesn't run in the Simulator; try a device, or turn off Busy background."
                 : "Lay the board on a plain floor that differs from it in colour, and shoot from straight above."
