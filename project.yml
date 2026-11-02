@@ -2,7 +2,7 @@ name: ContourLab
 options:
   bundleIdPrefix: com.anupamchugh
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "27.0"
 packages:
   ContourLabKit:
     path: ContourLabKit

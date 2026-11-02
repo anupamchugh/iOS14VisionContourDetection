@@ -137,7 +137,7 @@ struct ContentView: View {
             }.value
         }
         isCounting = false
-        if let result, result.summary.count > 0, #available(iOS 27, *) {
+        if let result, result.summary.count > 0 {
             modelNote = await ModelNote.describe(image: newImage, summary: result.summary)
         }
     }

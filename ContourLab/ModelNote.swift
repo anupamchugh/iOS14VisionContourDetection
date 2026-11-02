@@ -6,7 +6,6 @@ import FoundationModels
 ///
 /// The model sees the photo and Vision's numbers, and is told not to count. The app never shows a
 /// number from the model: the count always comes from `ContourCounter`.
-@available(iOS 27, *)
 enum ModelNote {
     static func describe(image: CGImage, summary: CountSummary) async -> String? {
         guard case .available = SystemLanguageModel.default.availability else { return nil }
