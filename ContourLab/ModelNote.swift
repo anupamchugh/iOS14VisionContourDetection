@@ -17,9 +17,8 @@ enum ModelNote {
                 "Vision found \(summary.count) round objects in this photo. What are they, and what are they on?"
                 Attachment(image)
             }
-            let text = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
             // Keep the rule visible in code too: drop any reply that slipped a number in.
-            return text.rangeOfCharacter(from: .decimalDigits) == nil ? text : nil
+            return ModelText.withoutNumbers(response.content)
         } catch {
             return nil
         }

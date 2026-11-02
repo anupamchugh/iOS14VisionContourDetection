@@ -4,29 +4,18 @@ import UIKit
 /// Pictures that ship with the app, so it works in the simulator with no photo library.
 enum Sample: String, CaseIterable, Identifiable {
     case coins = "Coins"
-    case discs = "Discs"
-    case shapes = "Shapes"
-    case busy = "Busy"
-    case board = "Board"
+    case leaves = "Leaves"
+    case surfboard = "Surfboard"
+    case anything = "Anything"
 
     var id: Self { self }
-
-    /// The counting mode each sample is made for.
-    var mode: CountMode {
-        switch self {
-        case .coins, .discs: .round
-        case .shapes, .busy: .shapes
-        case .board: .surfboard
-        }
-    }
 
     var image: CGImage? {
         switch self {
         case .coins: UIImage(named: "coins")?.cgImage
-        case .discs: Self.drawnDiscs()
-        case .shapes: Self.drawnShapes(stripes: false)
-        case .busy: Self.drawnShapes(stripes: true)
-        case .board: Self.drawnBoard()
+        case .leaves: Self.drawnLeaves()
+        case .surfboard: Self.drawnBoard()
+        case .anything: Self.drawnShapes(stripes: false)
         }
     }
 
@@ -71,20 +60,35 @@ enum Sample: String, CaseIterable, Identifiable {
         return image.cgImage
     }
 
-    /// Two sizes of disc, two of them touching, on a light background.
-    static func drawnDiscs() -> CGImage? {
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 900, height: 600))
+    /// Four leaves and a 1 € coin (23.25 mm, drawn 93 px wide) on cream paper, at 4 px per millimetre.
+    static func drawnLeaves() -> CGImage? {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 900, height: 700))
         let image = renderer.image { context in
-            UIColor(red: 0.9, green: 0.91, blue: 0.94, alpha: 1).setFill()
-            context.fill(CGRect(x: 0, y: 0, width: 900, height: 600))
-            UIColor(red: 0.78, green: 0.47, blue: 0.2, alpha: 1).setFill()
-            for x in [150.0, 330, 510, 690] {
-                context.cgContext.fillEllipse(in: CGRect(x: x - 50, y: 100, width: 100, height: 100))
+            let cg = context.cgContext
+            UIColor(red: 0.93, green: 0.9, blue: 0.84, alpha: 1).setFill()
+            cg.fill(CGRect(x: 0, y: 0, width: 900, height: 700))
+            // (centre x, centre y, angle, length, width, colour)
+            let leaves: [(Double, Double, Double, Double, Double, UIColor)] = [
+                (210, 170, -30, 300, 110, UIColor(red: 0.31, green: 0.54, blue: 0.24, alpha: 1)),
+                (640, 160, 15, 280, 90, UIColor(red: 0.48, green: 0.64, blue: 0.29, alpha: 1)),
+                (230, 500, -40, 260, 120, UIColor(red: 0.64, green: 0.46, blue: 0.17, alpha: 1)),
+                (640, 500, 35, 240, 130, UIColor(red: 0.37, green: 0.6, blue: 0.27, alpha: 1))
+            ]
+            for (x, y, angle, length, width, colour) in leaves {
+                cg.saveGState()
+                cg.translateBy(x: x, y: y)
+                cg.rotate(by: angle * .pi / 180)
+                // A pointed leaf: two arcs meeting at the tip and the stem end.
+                let leaf = UIBezierPath()
+                leaf.move(to: CGPoint(x: -length / 2, y: 0))
+                leaf.addQuadCurve(to: CGPoint(x: length / 2, y: 0), controlPoint: CGPoint(x: 0, y: -width))
+                leaf.addQuadCurve(to: CGPoint(x: -length / 2, y: 0), controlPoint: CGPoint(x: 0, y: width))
+                colour.setFill()
+                leaf.fill()
+                cg.restoreGState()
             }
-            UIColor(red: 0.62, green: 0.65, blue: 0.2, alpha: 1).setFill()
-            for (x, y) in [(220.0, 400.0), (370, 400), (640, 380)] {
-                context.cgContext.fillEllipse(in: CGRect(x: x - 75, y: y - 75, width: 150, height: 150))
-            }
+            UIColor(red: 0.78, green: 0.63, blue: 0.25, alpha: 1).setFill()
+            cg.fillEllipse(in: CGRect(x: 430 - 46.5, y: 340 - 46.5, width: 93, height: 93))
         }
         return image.cgImage
     }
