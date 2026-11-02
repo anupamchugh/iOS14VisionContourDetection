@@ -34,7 +34,9 @@
 		92D529092655469ADE740E2C /* GuessCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuessCard.swift; sourceTree = "<group>"; };
 		9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountObjectsIntent.swift; sourceTree = "<group>"; };
 		A4123E18100EC6857C99B9FC /* ShapeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeViews.swift; sourceTree = "<group>"; };
+		A82764B44B87842BDD9F8275 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C47BB0B40B0650047464EA17 /* ContourLab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ContourLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CF49265033F1719B28D5B139 /* ContourLab.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ContourLab.entitlements; sourceTree = "<group>"; };
 		D22F8F8A2325B32C8BB81951 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelNote.swift; sourceTree = "<group>"; };
 		EFDB8F50D7D3894BF0CA9807 /* SurfboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfboardView.swift; sourceTree = "<group>"; };
@@ -86,9 +88,11 @@
 				2973225FB2C72A650E29D918 /* CameraPicker.swift */,
 				86BAC0A91C8D28BD2602E8C5 /* CoinsScreen.swift */,
 				F426D914177F22495F9946E5 /* ContentView.swift */,
+				CF49265033F1719B28D5B139 /* ContourLab.entitlements */,
 				80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */,
 				9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */,
 				92D529092655469ADE740E2C /* GuessCard.swift */,
+				A82764B44B87842BDD9F8275 /* Info.plist */,
 				EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */,
 				16276AB844A39EEDFF216892 /* Samples.swift */,
 				A4123E18100EC6857C99B9FC /* ShapeViews.swift */,
@@ -252,10 +256,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ContourLab/ContourLab.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M6P56H6G97;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ContourLab/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Contour Lab";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Contour Lab uses the camera to photograph the objects or surfboard you want to measure.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -283,10 +289,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ContourLab/ContourLab.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M6P56H6G97;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ContourLab/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Contour Lab";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Contour Lab uses the camera to photograph the objects or surfboard you want to measure.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

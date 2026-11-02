@@ -14,6 +14,19 @@ targets:
     sources: [ContourLab]
     dependencies:
       - package: ContourLabKit
+    # contourlab://import?mode=objects|surfboard&file=<name>: pictures Folio routes here through the shared Alcor App Group.
+    info:
+      path: ContourLab/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleURLTypes:
+          - CFBundleURLName: com.anupamchugh.ContourLab.import
+            CFBundleURLSchemes: [contourlab]
+    entitlements:
+      path: ContourLab/ContourLab.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.anupamchugh.alcor]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.anupamchugh.ContourLab

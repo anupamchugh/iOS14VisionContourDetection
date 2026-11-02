@@ -1,3 +1,4 @@
+import ContourLabKit
 import PhotosUI
 import SwiftUI
 
@@ -56,6 +57,12 @@ struct ContentView: View {
         .fullScreenCover(isPresented: $showsCamera) {
             CameraPicker { photo in unsorted = Self.upright(photo) }
                 .ignoresSafeArea()
+        }
+        .onOpenURL { url in
+            // A picture Folio routed here: contourlab://import?mode=objects|surfboard&file=<name>
+            guard let link = FolioImportLink(url: url), let file = link.fileURL,
+                  let photo = UIImage(contentsOfFile: file.path), let image = Self.upright(photo) else { return }
+            path = [Photo(image: image, kind: link.mode == .surfboard ? .surfboard : .coins)]
         }
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }
