@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "ContourLabKit",
-    platforms: [.iOS(.v26), .macOS(.v26)],
+    platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "ContourLabKit", targets: ["ContourLabKit"])
     ],
