@@ -58,7 +58,7 @@ xcodegen generate
 open ContourLab.xcodeproj
 ```
 
-Requires Xcode 27 and iOS 26 or later. The on-device model needs iOS 27 on a device with Apple Intelligence.
+Requires Xcode 27 and iOS 27 or later. The on-device model needs a device with Apple Intelligence.
 
 Run the counter's tests on the Mac (Vision runs on macOS too):
 
