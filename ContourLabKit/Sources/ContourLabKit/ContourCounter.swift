@@ -56,18 +56,25 @@ public struct ContourCounter: Sendable {
             )
         }
 
+        let outlines = try Self.outlines(
+            of: maskImage, width: width, height: height,
+            minimumArea: .pi * pow(minimumRadiusFraction * min(width, height), 2)
+        )
+        return Self.result(objects: objects, outlines: outlines, groupGap: groupGap)
+    }
+
+    /// Vision's outlines of the object areas in a black-on-white mask, 0...1, origin at the top left.
+    static func outlines(of maskImage: CGImage, width: Double, height: Double, minimumArea: Double) throws -> [[CGPoint]] {
         let request = VNDetectContoursRequest()
         request.detectsDarkOnLight = true
         request.maximumImageDimension = Int(max(width, height))
         try VNImageRequestHandler(cgImage: maskImage).perform([request])
-        let outlines = (request.results?.first?.topLevelContours ?? []).compactMap { contour -> [CGPoint]? in
+        return (request.results?.first?.topLevelContours ?? []).compactMap { contour -> [CGPoint]? in
             // Vision's points are normalized with the origin at the bottom left.
             let points = contour.normalizedPoints.map { CGPoint(x: Double($0.x), y: 1 - Double($0.y)) }
             let area = ShapeMetrics(points: points.map { CGPoint(x: $0.x * width, y: $0.y * height) }).area
-            return area >= .pi * pow(minimumRadiusFraction * min(width, height), 2) ? points : nil
+            return area >= minimumArea ? points : nil
         }
-
-        return Self.result(objects: objects, outlines: outlines, groupGap: groupGap)
     }
 
     static func result(objects: [CountedObject], outlines: [[CGPoint]], groupGap: Double) -> CountResult {

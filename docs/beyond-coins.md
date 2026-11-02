@@ -35,4 +35,4 @@ With millimetres, euro or rupee coins could be named by diameter and totalled. T
 
 1. **Lift into 3D (built in this branch).** Counted objects become colour-matched tokens on a table you can orbit. It works in the simulator, and it is the base the AR overlay and the visionOS volume reuse.
 2. **Real size from a bank card.** Find the card with `DetectRectanglesRequest`, convert pixels to millimetres, and show each object's diameter. Tokens then become life-size, which is what AR placement needs.
-3. **Any shape, any background.** Use `GenerateForegroundInstanceMaskRequest` instead of the colour mask, and extrude each outline instead of drawing a cylinder: leaves, cookies or hand-drawn shapes become 3D pieces.
+3. **Any shape, any background (counting built).** `ShapeCounter` counts each separate area and measures its length, width and roundness. `ForegroundMask` (`VNGenerateForegroundInstanceMaskRequest`) replaces the colour mask on busy backgrounds. Still to do: extrude each outline into a 3D piece instead of drawing a cylinder.

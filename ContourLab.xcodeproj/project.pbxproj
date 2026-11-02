@@ -12,6 +12,7 @@
 		57796B4E52FB1FBD5C67A610 /* ContourLabKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3B733E547163D41CE5134694 /* ContourLabKit */; };
 		5CFBC530B137592DB015920A /* CountObjectsIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */; };
 		9E45ACA970542D79F1A1D082 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F426D914177F22495F9946E5 /* ContentView.swift */; };
+		A9E9EE6240EAC77EE7BD8863 /* ShapeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4123E18100EC6857C99B9FC /* ShapeViews.swift */; };
 		D2FE33C4E92F8B609904D354 /* ModelNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */; };
 		DAB1DB06B11C1010752BBF30 /* ContourLabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */; };
 		EE0053D0ADE406EDAE2F9811 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D22F8F8A2325B32C8BB81951 /* Assets.xcassets */; };
@@ -23,6 +24,7 @@
 		72EE4A5A9F1A67115E809C78 /* TableView3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView3D.swift; sourceTree = "<group>"; };
 		80D0A2D66F3FA27ED624BECE /* ContourLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContourLabApp.swift; sourceTree = "<group>"; };
 		9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountObjectsIntent.swift; sourceTree = "<group>"; };
+		A4123E18100EC6857C99B9FC /* ShapeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeViews.swift; sourceTree = "<group>"; };
 		C47BB0B40B0650047464EA17 /* ContourLab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ContourLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D22F8F8A2325B32C8BB81951 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelNote.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 				9AD52C36E1BA704249603535 /* CountObjectsIntent.swift */,
 				EF21FFEFF6C7ABB860EAB0B0 /* ModelNote.swift */,
 				16276AB844A39EEDFF216892 /* Samples.swift */,
+				A4123E18100EC6857C99B9FC /* ShapeViews.swift */,
 				72EE4A5A9F1A67115E809C78 /* TableView3D.swift */,
 			);
 			path = ContourLab;
@@ -160,6 +163,7 @@
 				5CFBC530B137592DB015920A /* CountObjectsIntent.swift in Sources */,
 				D2FE33C4E92F8B609904D354 /* ModelNote.swift in Sources */,
 				508319D2C5B1A8FE4CA53120 /* Samples.swift in Sources */,
+				A9E9EE6240EAC77EE7BD8863 /* ShapeViews.swift in Sources */,
 				1FD244ACA7A96F45B4ACE1E0 /* TableView3D.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
