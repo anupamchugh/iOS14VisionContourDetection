@@ -3,7 +3,8 @@ import PhotosUI
 import SwiftUI
 
 struct ContentView: View {
-    @State private var sample: Sample? = .coins
+    /// The last sample picked, so the app reopens on it.
+    @State private var sample: Sample? = Sample(rawValue: UserDefaults.standard.string(forKey: "sample") ?? "") ?? .coins
     @State private var pickedItem: PhotosPickerItem?
     @State private var image: CGImage?
     @State private var result: CountResult?
@@ -15,6 +16,7 @@ struct ContentView: View {
     @State private var busyBackground = false
     @State private var shapes: ShapeResult?
     @State private var shapesFailed = false
+    @State private var showsCamera = false
 
     var body: some View {
         NavigationStack {
@@ -25,10 +27,12 @@ struct ContentView: View {
                         ForEach(CountMode.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
-                    if mode == .shapes {
+                    if mode != .round {
                         Toggle("Busy background", isOn: $busyBackground)
                     }
-                    if mode == .shapes, let image {
+                    if mode == .surfboard, let image {
+                        SurfboardView(image: image, busyBackground: busyBackground)
+                    } else if mode == .shapes, let image {
                         ShapeImage(image: image, result: shapes)
                         if isCounting {
                             ProgressView("Measuring…")
@@ -73,12 +77,20 @@ struct ContentView: View {
         }
         .task(id: sample) {
             guard let sample else { return }
+            UserDefaults.standard.set(sample.rawValue, forKey: "sample")
             mode = sample.mode
             busyBackground = sample == .busy
             await load(sample.image)
         }
         .onChange(of: mode) { Task { await count() } }
         .onChange(of: busyBackground) { Task { await count() } }
+        .fullScreenCover(isPresented: $showsCamera) {
+            CameraPicker { photo in
+                sample = nil
+                Task { await load(Self.upright(photo)) }
+            }
+            .ignoresSafeArea()
+        }
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }
             sample = nil
@@ -101,6 +113,11 @@ struct ContentView: View {
                     .labelStyle(.iconOnly)
                     .frame(minWidth: 44, minHeight: 44)
             }
+            if CameraPicker.isAvailable {
+                Button("Take photo", systemImage: "camera") { showsCamera = true }
+                    .labelStyle(.iconOnly)
+                    .frame(minWidth: 44, minHeight: 44)
+            }
         }
     }
 
@@ -115,7 +132,7 @@ struct ContentView: View {
         shapes = nil
         shapesFailed = false
         modelNote = nil
-        guard let newImage = image else { return }
+        guard let newImage = image, mode != .surfboard else { return }
         isCounting = true
         if mode == .shapes {
             let busy = busyBackground

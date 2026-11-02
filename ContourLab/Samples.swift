@@ -7,6 +7,7 @@ enum Sample: String, CaseIterable, Identifiable {
     case discs = "Discs"
     case shapes = "Shapes"
     case busy = "Busy"
+    case board = "Board"
 
     var id: Self { self }
 
@@ -15,6 +16,7 @@ enum Sample: String, CaseIterable, Identifiable {
         switch self {
         case .coins, .discs: .round
         case .shapes, .busy: .shapes
+        case .board: .surfboard
         }
     }
 
@@ -24,7 +26,49 @@ enum Sample: String, CaseIterable, Identifiable {
         case .discs: Self.drawnDiscs()
         case .shapes: Self.drawnShapes(stripes: false)
         case .busy: Self.drawnShapes(stripes: true)
+        case .board: Self.drawnBoard()
         }
+    }
+
+    /// A 6'2" shortboard seen from above on a concrete floor, lying sideways with the nose on the left:
+    /// 74 in long, 19 ¼ in wide about an inch behind centre, with a squash tail. Drawn at 13 px per inch.
+    static func drawnBoard() -> CGImage? {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 1100, height: 420))
+        let image = renderer.image { context in
+            UIColor(red: 0.52, green: 0.53, blue: 0.55, alpha: 1).setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 1100, height: 420))
+            // Drawn nose-down below, then turned on its side by swapping x and y.
+            context.cgContext.concatenate(CGAffineTransform(a: 0, b: 1, c: 1, d: 0, tx: 0, ty: 0))
+            let inch = 13.0, centre = 210.0, nose = 69.0
+            func y(_ inches: Double) -> Double { nose + inches * inch }
+            func x(_ halfWidth: Double) -> Double { centre + halfWidth * inch }
+            // Right rail, nose to tail, as (inches from nose, half-width) for each curve's two control
+            // points and its end. The left rail runs back up the mirror image.
+            let segments: [[(Double, Double)]] = [
+                [(1.5, 1.6), (7, 4.4), (12, 5.75)],
+                [(19, 7.4), (30, 9.625), (38, 9.625)],
+                [(47, 9.625), (56, 8.4), (62, 7.125)],
+                [(66.5, 6.2), (71, 5.2), (74, 4.75)]
+            ]
+            func point(_ p: (Double, Double), side: Double) -> CGPoint { CGPoint(x: x(side * p.1), y: y(p.0)) }
+            let board = UIBezierPath()
+            board.move(to: CGPoint(x: centre, y: y(0)))
+            for segment in segments {
+                board.addCurve(to: point(segment[2], side: 1), controlPoint1: point(segment[0], side: 1), controlPoint2: point(segment[1], side: 1))
+            }
+            board.addLine(to: point(segments[3][2], side: -1))
+            let starts = [(0.0, 0.0)] + segments.map { $0[2] }
+            for (index, segment) in segments.enumerated().reversed() {
+                board.addCurve(to: point(starts[index], side: -1), controlPoint1: point(segment[1], side: -1), controlPoint2: point(segment[0], side: -1))
+            }
+            board.close()
+            UIColor(red: 0.97, green: 0.96, blue: 0.91, alpha: 1).setFill()
+            board.fill()
+            // The stringer, a thin wooden line down the middle.
+            UIColor(red: 0.72, green: 0.6, blue: 0.42, alpha: 1).setFill()
+            context.fill(CGRect(x: centre - 1, y: y(0.5), width: 2, height: 73 * inch))
+        }
+        return image.cgImage
     }
 
     /// Two sizes of disc, two of them touching, on a light background.
